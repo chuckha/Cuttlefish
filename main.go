@@ -10,7 +10,7 @@ func main() {
 
 	curl := make(chan []byte)
 	csite := make(chan Site)
-	death := make(chan struct{})
+	done := make(chan struct{})
 
 	// Give our crawler a place to start.
 	go Seed(curl)

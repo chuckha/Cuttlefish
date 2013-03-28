@@ -13,10 +13,10 @@ type Site struct {
 
 // GetUrl will make an HTTP GET request, build a site object and put it on a channel.
 // It will send a message on the stop channel after the function finishes.
-func GetUrl(url []byte, csite chan Site, death chan struct{}) {
+func GetUrl(url []byte, csite chan Site, done chan struct{}) {
 	resource := string(url)
 	defer func () {
-		death <- struct{}{}
+		done <- struct{}{}
 	}()
 	resp, err := http.Get(resource)
 	if err != nil {
@@ -34,17 +34,17 @@ func GetUrl(url []byte, csite chan Site, death chan struct{}) {
 // It will listen to a URL channel and spawn a goroutine for each URL.
 // It manages the number of goroutines using a stop channel.
 // This function does not return and should be used as a goroutine.
-func ThrottledCrawl(curl chan []byte, csite chan Site, death chan struct{}, visited map[string]int) {
+func ThrottledCrawl(curl chan []byte, csite chan Site, done chan struct{}, visited map[string]int) {
 	maxGos := 10
 	numGos := 0
 	for {
 		if numGos > maxGos {
-			<-death
+			<-done
 			numGos -= 1
 		}
 		url := string(<-curl)
 		if _, ok := visited[url]; !ok {
-			go GetUrl([]byte(url), csite, death)
+			go GetUrl([]byte(url), csite, done)
 			numGos += 1
 		}
 		visited[url] += 1
