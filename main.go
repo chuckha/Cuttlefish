@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	. "github.com/ChuckHa/Cuttlefish/cuttlefish"
 	"regexp"
 )
@@ -19,11 +20,13 @@ func main() {
 	visited := make(map[string]int)
 
 	// Start the throttled crawling.
-	go ThrottledCrawl(curl, csite, death, visited)
+	go ThrottledCrawl(curl, csite, done, visited)
 
 	// Main loop that never exits and blocks on the data of a page.
 	for {
+		fmt.Println("blocking on getting a site")
 		site := <-csite
+		fmt.Println("Got a site")
 		go GetUrls(curl, site, regex)
 	}
 }
